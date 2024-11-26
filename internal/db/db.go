@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
+	"github.com/labstack/gommon/log"
 )
 
 type Storage interface {
@@ -44,19 +45,23 @@ type DB struct {
 func NewDataBase(dbname string) (Storage, error) {
 	db, err := sql.Open("postgres", dbname)
 	if err != nil {
+		log.Debug("newdatabase err: ", err)
 		return nil, err
 	}
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
+		log.Debug("newdatabase err: ", err)
 		return nil, err
 	}
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://./db/migrations",
 		"postgres", driver)
 	if err != nil {
+		log.Debug("newdatabase err: ", err)
 		return nil, err
 	}
 	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		log.Debug("newdatabase err: ", err)
 		return nil, err
 	}
 
@@ -66,6 +71,7 @@ func NewDataBase(dbname string) (Storage, error) {
 func (db *DB) DeleteSong(song Song) error {
 	_, err := db.db.Exec("DELETE FROM music WHERE author=$1 AND song=$2", song.Group, song.Song)
 	if err != nil {
+		log.Debug("deletesong err: ", err)
 		return err
 	}
 	return nil
@@ -74,6 +80,7 @@ func (db *DB) DeleteSong(song Song) error {
 func (db *DB) AddSong(song SongData) error {
 	_, err := db.db.Exec("INSERT INTO music (author, song, releaseData, textSong, songLink) VALUES ($1, $2, $3, $4, $5)", song.Group, song.Song, song.ReleaseData, song.TextSong, song.SongLink)
 	if err != nil {
+		log.Debug("addsong err: ")
 		return err
 	}
 	return nil
@@ -97,12 +104,10 @@ func (db *DB) UpdateSong(song SongData) error {
 		params = append(params, song.SongLink)
 	}
 
-	// Если нет полей для обновления, возвращаем ошибку
 	if len(setClauses) == 0 {
 		return fmt.Errorf("no fields to update")
 	}
 
-	// Собираем финальный запрос
 	query += strings.Join(setClauses, ", ")
 	query += " WHERE author=$" + strconv.Itoa(len(params)+1) + " AND song=$" + strconv.Itoa(len(params)+2)
 
@@ -110,6 +115,7 @@ func (db *DB) UpdateSong(song SongData) error {
 
 	_, err := db.db.Exec(query, params...)
 	if err != nil {
+		log.Debug("updatesong err: ", err)
 		return err
 	}
 	return nil
@@ -119,11 +125,13 @@ func (db *DB) Info(typeSort Sort) ([]SongData, error) {
 	var songs []SongData
 	rows, err := db.db.Query("SELECT * FROM music ORDER BY " + typeSort.TypeSort + " " + typeSort.Direction)
 	if err != nil {
+		log.Debug("info err: ", err)
 		return nil, err
 	}
 	for rows.Next() {
 		var song SongData
 		if err := rows.Scan(&song.Group, &song.Song, &song.ReleaseData, &song.TextSong, &song.SongLink); err != nil {
+			log.Debug("info err: ", err)
 			return nil, err
 		}
 		songs = append(songs, song)
@@ -137,6 +145,7 @@ func (db *DB) GetTextSong(song Song) (string, error) {
 	row := db.db.QueryRow("SELECT textSong FROM music WHERE author=$1 AND song=$2", song.Group, song.Song)
 	err := row.Scan(&text)
 	if err != nil {
+		log.Debug("gettextsong err: ", err)
 		return "", err
 	}
 	return text, nil
