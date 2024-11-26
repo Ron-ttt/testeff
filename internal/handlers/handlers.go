@@ -19,15 +19,15 @@ type start struct {
 	api      string
 }
 
-func (st start) Delete(res http.ResponseWriter, req *http.Request) {
+func (st start) DeleteSong(res http.ResponseWriter, req *http.Request) {
 	var song db.Song
 	if err := json.NewDecoder(req.Body).Decode(&song); err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	err := st.database.DeleteSong(song)
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
+		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
 	res.WriteHeader(http.StatusOK)
@@ -70,7 +70,7 @@ func (st start) Add(res http.ResponseWriter, req *http.Request) {
 	var song db.Song
 
 	if err := json.NewDecoder(req.Body).Decode(&song); err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	resp, err := http.Get(st.api + "/info?group=" + song.Group + "&song=" + song.Song)
@@ -97,7 +97,7 @@ func (st start) Add(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 }
 
-func (st start) Data(res http.ResponseWriter, req *http.Request) {
+func (st start) GetSong(res http.ResponseWriter, req *http.Request) {
 	var typeSort db.Sort
 	if err := json.NewDecoder(req.Body).Decode(&typeSort); err != nil {
 		http.Error(res, err.Error(), http.StatusBadRequest)

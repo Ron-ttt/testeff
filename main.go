@@ -11,11 +11,11 @@ import (
 func main() {
 	st := handlers.Init()
 	r := mux.NewRouter()
-	r.HandleFunc("/delete", st.Delete).Methods(http.MethodPost)
-	r.HandleFunc("/update", st.Update).Methods(http.MethodPost)
-	r.HandleFunc("/add", st.Add).Methods(http.MethodPost)
-	r.HandleFunc("/data", st.Data).Methods(http.MethodPost)
-	r.HandleFunc("/text", st.TextSong).Methods(http.MethodPost)
+	r.HandleFunc("/delete-song", st.DeleteSong).Methods(http.MethodPost)
+	r.HandleFunc("/update-song", st.Update).Methods(http.MethodPost)
+	r.HandleFunc("/add-song", st.Add).Methods(http.MethodPost)
+	r.HandleFunc("/get-songs", st.GetSong).Methods(http.MethodPost)
+	r.HandleFunc("/get-song-text", st.TextSong).Methods(http.MethodPost)
 
 	log.Println("server is running")
 	err := http.ListenAndServe(st.URL, r)

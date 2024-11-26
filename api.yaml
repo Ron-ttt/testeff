@@ -1,0 +1,177 @@
+openapi: 3.0.3
+info:
+  title: API for music service 3.0
+  version: 1.0.11
+tags:
+  - name: music
+    description: Methods to interact with songs
+paths:
+  /delete-song:
+    post:
+      tags:
+        - music
+      summary: Delete song 
+      requestBody:
+        description: Group and name of the song
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                group:
+                  type: string
+                  description: name of group
+                  example: The Beatles
+                song: 
+                  type: string
+                  description: name of song
+                  example: Yellow Submarine
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Error executing database query
+        '500':
+          description: Invalid body in request
+  /add-song:
+    post:
+      summary: Add a new song to the database
+      description: Accepts a song's group and title, fetches additional song information from an external API, and adds the song to the database.
+      operationId: addSong
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                group:
+                  type: string
+                  description: The name of the music group.
+                  example: "The Beatles"
+                song:
+                  type: string
+                  description: The name of the song.
+                  example: "Hey Jude"
+      responses:
+        '200':
+          description: Successfully added the song to the database.
+        '400':
+          description: Invalid input or bad request.
+        '500':
+          description: Internal server error while processing the request or when interacting with the external API.
+  /update-song:
+    post:
+      summary: Update an existing song's details in the database
+      description: Accepts a song's updated information and updates the song details in the database.
+      operationId: updateSong
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                group:
+                  type: string
+                  description: The name of the music group.
+                  example: "The Beatles"
+                song:
+                  type: string
+                  description: The name of the song.
+                  example: "Hey Jude"
+                releaseData:
+                  type: string
+                  description: The release date of the song.
+                  example: "1968-08-26"
+                textSong:
+                  type: string
+                  description: The lyrics of the song.
+                  example: |
+                    "Hey, Jude, don't make it bad... Take a sad song and make it better..."
+                songLink:
+                  type: string
+                  description: The URL to the song.
+                  example: "https://example.com/hey-jude"
+      responses:
+        '200':
+          description: Successfully updated the song details in the database.
+        '400':
+          description: Invalid request body or missing fields.
+        '500':
+          description: Internal server error while updating the song details in the database.
+  /get-songs:
+    post:
+      summary: Get a list of songs with sorting options
+      description: Accepts sorting parameters and returns a list of songs based on the given sorting criteria.
+      operationId: getSongs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                typeSort:
+                  type: string
+                  description: The field by which to sort the list of songs (e.g., "group", "song").
+                  example: "song"
+                direction:
+                  type: string
+                  description: The direction in which to sort the list ("asc" for ascending, "desc" for descending).
+                  example: "asc"
+      responses:
+        '200':
+          description: Successfully retrieved the sorted list of songs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    group:
+                      type: string
+                      description: The name of the music group.
+                    song:
+                      type: string
+                      description: The name of the song.
+        '400':
+          description: Invalid request body or missing sorting parameters.
+        '500':
+          description: Internal server error while retrieving the songs from the database.
+  /get-song-text:
+    post:
+      summary: Get the lyrics of a song
+      description: Accepts a JSON body with the group name and song title, returns the lyrics of the song.
+      operationId: getTextSong
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                group:
+                  type: string
+                  description: The name of the music group.
+                  example: "The Beatles"
+                song:
+                  type: string
+                  description: The name of the song.
+                  example: "Hey Jude"
+      responses:
+        '200':
+          description: Successfully retrieved the song lyrics.
+          content:
+            application/json:
+              schema:
+                type: string
+                description: The lyrics of the song.
+                example: |
+                  "Hey, Jude, don't make it bad... Take a sad song and make it better..."
+        '400':
+          description: Invalid request body or missing fields.
+        '500':
+          description: Internal server error when fetching the song lyrics.
